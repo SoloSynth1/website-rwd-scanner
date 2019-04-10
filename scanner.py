@@ -22,7 +22,7 @@ class RWDScanner():
         response = self._request(url)
         soup = self._get_soup(response)
 
-        landing_url = response.url  # renew the url to include cases being redirected
+        landing_url = response.url  # to include cases being redirected
 
         scan_results = {'input_url': url,
                         'landing_url': landing_url,
@@ -57,24 +57,22 @@ class RWDScanner():
         return False
 
     def _check_stylesheets_for_at_media(self, soup, url):
-        local_stylesheets = self._get_local_stylesheet(soup)
+        local_stylesheets = self._get_local_stylesheets(soup)
         for local_stylesheet in local_stylesheets:
             if '@media' in local_stylesheet:
                 return True
-        external_stylesheets = self._get_external_stylesheets_link(soup, url)
+        external_stylesheets = self._get_external_stylesheet_links(soup, url)
         for external_stylesheet in external_stylesheets:
             response = requests.get(external_stylesheet, timeout=self.timeout)
             if '@media' in response.text:
                 return True
         return False
 
-    def _get_local_stylesheet(self, soup):
-        styles = soup.find_all('style')
-        return [x.text for x in styles]
+    def _get_local_stylesheets(self, soup):
+        return [x.text for x in soup.find_all('style')]
 
-    def _get_external_stylesheets_link(self, soup, url):
-        stylesheets = [urljoin(url, x['href']) for x in soup.find_all('link', {'rel': 'stylesheet'})]
-        return stylesheets
+    def _get_external_stylesheet_links(self, soup, url):
+        return [urljoin(url, x['href']) for x in soup.find_all('link', {'rel': 'stylesheet'})]
 
 if __name__ == "__main__":
     scanner = RWDScanner()
