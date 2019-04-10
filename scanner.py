@@ -28,8 +28,6 @@ class RWDScanner():
                         'final_url': final_url,
                         'results': {}}
 
-        print(response.text)
-
         if soup:
             scan_results['retrieve-success'] = True
             scan_results['results']['supports-device-width'] = self._check_for_viewport(soup)
@@ -80,4 +78,4 @@ class RWDScanner():
 
 if __name__ == "__main__":
     scanner = RWDScanner()
-    print(scanner.scan('https://hkmci.com'))
+    print(scanner.scan('https://forum.hkgolden.com/topics.aspx?type=BW'))
