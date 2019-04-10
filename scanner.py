@@ -32,10 +32,10 @@ class RWDScanner():
             scan_results['retrieve-success'] = True
             scan_results['results']['supports-device-width'] = self._check_for_viewport(soup)
             scan_results['results']['supports-@media-style'] = self._check_stylesheets_for_at_media(soup, landing_url)
+            scan_results['results']['contains-ga-gtm-script'] = self._check_for_ga_tags(soup, url)
         else:
             scan_results['retrieve-success'] = False
         return scan_results
-
 
     def _request(self, url):
         response = requests.get(url, headers=self.headers, timeout=self.timeout)
@@ -74,6 +74,21 @@ class RWDScanner():
     def _get_external_stylesheet_links(self, soup, url):
         return [urljoin(url, x['href']) for x in soup.find_all('link', {'rel': 'stylesheet'})]
 
+    def _check_for_ga_tags(self, soup, url):
+        scripts = self._get_scripts(soup)
+        for script in scripts:
+            if script.has_attr('src'):
+                text = requests.get(urljoin(url, script['src'])).text
+            else:
+                text = script.text
+            if 'www.googletagmanager.com' in text or 'www.google-analytics.com' in text:
+                return True
+        return False
+
+    def _get_scripts(self, soup):
+        return [x for x in soup.find_all('script')]
+
+
 if __name__ == "__main__":
     scanner = RWDScanner()
-    print(scanner.scan('https://blog.jxck.io/entries/2017-08-19/content-encoding-brotli.html'))
+    print(scanner.scan('https://www.hkmci.com'))
