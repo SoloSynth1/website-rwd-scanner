@@ -22,16 +22,16 @@ class RWDScanner():
         response = self._request(url)
         soup = self._get_soup(response)
 
-        final_url = response.url  # renew the url to include cases being redirected
+        landing_url = response.url  # renew the url to include cases being redirected
 
         scan_results = {'input_url': url,
-                        'final_url': final_url,
+                        'landing_url': landing_url,
                         'results': {}}
 
         if soup:
             scan_results['retrieve-success'] = True
             scan_results['results']['supports-device-width'] = self._check_for_viewport(soup)
-            scan_results['results']['supports-@media-style'] = self._check_stylesheets_for_at_media(soup, final_url)
+            scan_results['results']['supports-@media-style'] = self._check_stylesheets_for_at_media(soup, landing_url)
         else:
             scan_results['retrieve-success'] = False
         return scan_results
@@ -78,4 +78,4 @@ class RWDScanner():
 
 if __name__ == "__main__":
     scanner = RWDScanner()
-    print(scanner.scan('https://forum.hkgolden.com/topics.aspx?type=BW'))
+    print(scanner.scan('https://blog.jxck.io/entries/2017-08-19/content-encoding-brotli.html'))
