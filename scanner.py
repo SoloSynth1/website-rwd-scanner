@@ -19,29 +19,38 @@ class RWDScanner():
             }
 
     def scan(self, url):
+        landing_url = url
+
         response = self._request(url)
         soup = self._get_soup(response)
-
-        landing_url = response.url  # to include cases being redirected
 
         scan_results = {'input_url': url,
                         'landing_url': landing_url,
                         'results': {}}
 
         if soup:
+
+            landing_url = response.url  # to include cases being redirected
+
             scan_results['retrieve-success'] = True
             scan_results['results']['supports-device-width'] = self._check_for_viewport(soup)
             scan_results['results']['supports-@media-style'] = self._check_stylesheets_for_at_media(soup, landing_url)
             scan_results['results']['contains-ga-gtm-script'] = self._check_for_ga_tags(soup, url)
         else:
             scan_results['retrieve-success'] = False
+            scan_results['results']['supports-device-width'] = False
+            scan_results['results']['supports-@media-style'] = False
+            scan_results['results']['contains-ga-gtm-script'] = False
         return scan_results
 
     def _request(self, url):
-        response = requests.get(url, headers=self.headers, timeout=self.timeout)
-        if self.return_on_error or response.status_code // 100 == 2:
-            return response
-        return None
+        try:
+            response = requests.get(url, headers=self.headers, timeout=self.timeout)
+            if self.return_on_error or response.status_code // 100 == 2:
+                return response
+            return None
+        except:
+            return None
 
     def _get_soup(self, response):
         if response:
@@ -63,8 +72,8 @@ class RWDScanner():
                 return True
         external_stylesheets = self._get_external_stylesheet_links(soup, url)
         for external_stylesheet in external_stylesheets:
-            response = requests.get(external_stylesheet, timeout=self.timeout)
-            if '@media' in response.text:
+            response = self._request(external_stylesheet)
+            if response and '@media' in response.text:
                 return True
         return False
 
@@ -78,7 +87,11 @@ class RWDScanner():
         scripts = self._get_scripts(soup)
         for script in scripts:
             if script.has_attr('src'):
-                text = requests.get(urljoin(url, script['src'])).text
+                response = self._request(urljoin(url, script['src']))
+                if response:
+                    text = response.text
+                else:
+                    continue
             else:
                 text = script.text
             if 'www.googletagmanager.com' in text or 'www.google-analytics.com' in text:
