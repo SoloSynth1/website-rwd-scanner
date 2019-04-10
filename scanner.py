@@ -10,7 +10,10 @@ class RWDScanner():
     def scan(self, url):
         response = self._request(url)
         soup = self._get_soup(response)
-        self._check_for_viewport(soup)
+        scan_results = {'url': url,
+                        'results': {}}
+        scan_results['results']['supports-device-width'] = self._check_for_viewport(soup)
+        return scan_results
 
     def _request(self, url):
         headers = {}
@@ -28,9 +31,10 @@ class RWDScanner():
     def _check_for_viewport(self, soup):
         viewports = soup.find_all('meta', {'name': "viewport"})
         for viewport in viewports:
-            print(viewport['content'])
-            print('device-width' in viewport['content'])
+            if 'device-width' in viewport['content']:
+                return True
+        return False
 
 if __name__ == "__main__":
     scanner = RWDScanner()
-    scanner.scan('https://www.hkmci.com')
+    print(scanner.scan('https://www.goodad.co/'))
