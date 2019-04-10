@@ -1,5 +1,6 @@
 import requests
 from bs4 import BeautifulSoup
+from urllib.parse import urljoin
 
 class RWDScanner():
 
@@ -8,7 +9,7 @@ class RWDScanner():
         self.return_on_error = False
         self.headers = {
             'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
-            'Accept-Encoding': 'gzip, deflate, br',
+            'Accept-Encoding': 'gzip, deflate',
             'Accept-Language': 'en-US,en;q=0.9,ja;q=0.8,zh-TW;q=0.7,zh;q=0.6,zh-CN;q=0.5',
             'Cache-Control': 'max-age=0',
             'Connection': 'keep-alive',
@@ -21,14 +22,22 @@ class RWDScanner():
         response = self._request(url)
         soup = self._get_soup(response)
 
-        scan_results = {'url': url,
+        final_url = response.url  # renew the url to include cases being redirected
+
+        scan_results = {'input_url': url,
+                        'final_url': final_url,
                         'results': {}}
+
+        print(response.text)
+
         if soup:
-            scan_results['retrieve-sucess'] = True
+            scan_results['retrieve-success'] = True
             scan_results['results']['supports-device-width'] = self._check_for_viewport(soup)
+            scan_results['results']['supports-@media-style'] = self._check_stylesheets_for_at_media(soup, final_url)
         else:
-            scan_results['retrieve-sucess'] = False
+            scan_results['retrieve-success'] = False
         return scan_results
+
 
     def _request(self, url):
         response = requests.get(url, headers=self.headers, timeout=self.timeout)
@@ -49,9 +58,26 @@ class RWDScanner():
                 return True
         return False
 
-    def _get_stylesheets(self, soup):
-        stylesheets = soup.find_all('')
+    def _check_stylesheets_for_at_media(self, soup, url):
+        local_stylesheets = self._get_local_stylesheet(soup)
+        for local_stylesheet in local_stylesheets:
+            if '@media' in local_stylesheet:
+                return True
+        external_stylesheets = self._get_external_stylesheets_link(soup, url)
+        for external_stylesheet in external_stylesheets:
+            response = requests.get(external_stylesheet, timeout=self.timeout)
+            if '@media' in response.text:
+                return True
+        return False
+
+    def _get_local_stylesheet(self, soup):
+        styles = soup.find_all('style')
+        return [x.text for x in styles]
+
+    def _get_external_stylesheets_link(self, soup, url):
+        stylesheets = [urljoin(url, x['href']) for x in soup.find_all('link', {'rel': 'stylesheet'})]
+        return stylesheets
 
 if __name__ == "__main__":
     scanner = RWDScanner()
-    print(scanner.scan('https://goodad.co'))
+    print(scanner.scan('https://hkmci.com'))
