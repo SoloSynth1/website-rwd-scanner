@@ -81,7 +81,7 @@ class RWDScanner():
         return [x.text for x in soup.find_all('style')]
 
     def _get_external_stylesheet_links(self, soup, url):
-        return [urljoin(url, x['href']) for x in soup.find_all('link', {'rel': 'stylesheet'})]
+        return [urljoin(url, x['href']) for x in soup.find_all('link', {'rel': 'stylesheet'}) if x.has_attr('href')]
 
     def _check_for_ga_tags(self, soup, url):
         scripts = self._get_scripts(soup)
