@@ -8,9 +8,9 @@ def read_csv(source):
     return websites
 
 def url_normalize(urls):
-    for idx, url in enumerate(urls):
+    for idx, _ in enumerate(urls):
         urls[idx] = urls[idx].strip('"')
-        if url.lower()[:4] != 'http':
+        if urls[idx].lower()[:4] != 'http':
             urls[idx] = "http://" + urls[idx]
     return urls
 
