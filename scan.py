@@ -10,7 +10,7 @@ def read_csv(source):
 def url_normalize(urls):
     for idx, url in enumerate(urls):
         urls[idx] = urls[idx].strip('"')
-        if not 'http://' in url.lower():
+        if url.lower()[:4] != 'http':
             urls[idx] = "http://" + urls[idx]
     return urls
 
