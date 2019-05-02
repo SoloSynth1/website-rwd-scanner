@@ -23,8 +23,8 @@ def scan(source, target):
             result = scanner.scan(website)
             print(result)
             line = []
-            line.append(result['input_url'])
-            line.append(result['landing_url'])
+            line.append(result['input-url'])
+            line.append(result['landing-url'])
             line.append(result['retrieve-success'])
             line.append(result['response-time'])
             line.append(result['results']['supports-device-width'])
