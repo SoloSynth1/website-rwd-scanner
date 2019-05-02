@@ -18,7 +18,7 @@ def scan(source, target):
     scanner = RWDScanner()
     websites = read_csv(source)
     with open(target, 'w') as f:
-        f.write('input_url,landing_url,retrieve-success,supports-device-width,supports-@media-style,contains-ga-gtm-script\n')
+        f.write('input_url,landing_url,retrieve-success,response-time,supports-device-width,supports-@media-style,contains-ga-gtm-script\n')
         for website in websites:
             result = scanner.scan(website)
             print(result)
@@ -26,6 +26,7 @@ def scan(source, target):
             line.append(result['input_url'])
             line.append(result['landing_url'])
             line.append(result['retrieve-success'])
+            line.append(result['response-time'])
             line.append(result['results']['supports-device-width'])
             line.append(result['results']['supports-@media-style'])
             line.append(result['results']['contains-ga-gtm-script'])

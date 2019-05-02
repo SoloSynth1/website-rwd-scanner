@@ -33,11 +33,13 @@ class RWDScanner():
             landing_url = response.url  # to include cases being redirected
 
             scan_results['retrieve-success'] = True
+            scan_results['response_time'] = response.elapsed.total_seconds()
             scan_results['results']['supports-device-width'] = self._check_for_viewport(soup)
             scan_results['results']['supports-@media-style'] = self._check_stylesheets_for_at_media(soup, landing_url)
             scan_results['results']['contains-ga-gtm-script'] = self._check_for_ga_tags(soup, url)
         else:
             scan_results['retrieve-success'] = False
+            scan_results['response_time'] = 0
             scan_results['results']['supports-device-width'] = False
             scan_results['results']['supports-@media-style'] = False
             scan_results['results']['contains-ga-gtm-script'] = False
@@ -104,4 +106,4 @@ class RWDScanner():
 
 if __name__ == "__main__":
     scanner = RWDScanner()
-    print(scanner.scan('https://www.hkmci.com'))
+    print(scanner.scan('https://www.google.com'))
